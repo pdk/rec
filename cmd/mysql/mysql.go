@@ -11,8 +11,10 @@ func main() {
 
 	conn := dbConn()
 
-	conn.Ping()
-
+	err := conn.Ping()
+	if err != nil {
+		log.Fatalf("failed to ping db: %v", err)
+	}
 }
 
 func dbConn() (db *sql.DB) {

@@ -1,6 +1,7 @@
 package pipe
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 
@@ -49,6 +50,10 @@ func ReadJSON(r io.Reader) Pipeline {
 
 func ReadCSV(r io.Reader) Pipeline {
 	return New(rec.CSVReader(r))
+}
+
+func ReadSQL(db *sql.DB, query string, args ...any) Pipeline {
+	return New(rec.SQLReader(db, query, args...))
 }
 
 func (p Pipeline) Filter(f func(r rec.Record) bool) Pipeline {
