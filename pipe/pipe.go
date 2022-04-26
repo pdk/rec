@@ -77,3 +77,24 @@ func Print(ch chan rec.Record) {
 		fmt.Println(rec)
 	}
 }
+
+func (p Pipeline) Limit(limit int) Pipeline {
+
+	return p.Then(func(in chan rec.Record) chan rec.Record {
+
+		out := make(chan rec.Record)
+		go func() {
+			defer close(out)
+
+			recCount := 0
+			for r := range in {
+				recCount++
+				if recCount <= limit {
+					out <- r
+				}
+			}
+		}()
+
+		return out
+	})
+}
