@@ -5,6 +5,7 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pdk/rec/pipe"
 )
 
 func main() {
@@ -15,6 +16,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to ping db: %v", err)
 	}
+
+	pipe.ReadSQL(conn, "select * from zapps.zb_billing_account limit 5;").Print()
+
 }
 
 func dbConn() (db *sql.DB) {
@@ -25,7 +29,7 @@ func dbConn() (db *sql.DB) {
 	dbName := "zapps"
 
 	// [username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
-	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
+	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName+"?parseTime=true")
 	if err != nil {
 		log.Fatalf("failed to connect to db: %v", err)
 	}

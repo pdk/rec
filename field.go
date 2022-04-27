@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // FieldType indicates what type of value is in the field.
@@ -16,6 +17,7 @@ const (
 	TypeFloat
 	TypeBoolean
 	TypeRecord
+	TypeDateTime
 )
 
 // String returns a string for the particular FieldType.
@@ -33,6 +35,8 @@ func (t FieldType) String() string {
 		return "Boolean"
 	case TypeRecord:
 		return "Record"
+	case TypeDateTime:
+		return "DateTime"
 	}
 
 	return "Invalid"
@@ -40,12 +44,13 @@ func (t FieldType) String() string {
 
 // Field holds one datum, of a particular type.
 type Field struct {
-	fieldType   FieldType
-	stringValue string
-	intValue    int64
-	floatValue  float64
-	boolValue   bool
-	recordValue Record
+	fieldType     FieldType
+	stringValue   string
+	intValue      int64
+	floatValue    float64
+	boolValue     bool
+	recordValue   Record
+	datetimeValue time.Time
 }
 
 func NewField(value any) Field {
@@ -66,6 +71,8 @@ func NewField(value any) Field {
 		return StringField(val)
 	case bool:
 		return BooleanField(val)
+	case time.Time:
+		return DateTimeField(val)
 	case Record:
 		return RecordField(val)
 	}
@@ -89,6 +96,8 @@ func (f Field) StringValue() string {
 		return strconv.FormatBool(f.boolValue)
 	case TypeRecord:
 		return f.recordValue.String()
+	case TypeDateTime:
+		return f.datetimeValue.Format(time.RFC3339)
 	}
 
 	return fmt.Sprintf("unhandled string type %d", f.fieldType)
@@ -109,6 +118,8 @@ func (f Field) AsString() (string, bool) {
 		return strconv.FormatBool(f.boolValue), true
 	case TypeRecord:
 		return f.recordValue.String(), true
+	case TypeDateTime:
+		return f.datetimeValue.Format(time.RFC3339), true
 	}
 
 	return fmt.Sprintf("unhandled string type %d", f.fieldType), false
@@ -129,6 +140,8 @@ func (f Field) String() string {
 		return strconv.FormatBool(f.boolValue)
 	case TypeRecord:
 		return f.recordValue.String()
+	case TypeDateTime:
+		return f.datetimeValue.Format(time.RFC3339)
 	}
 
 	return fmt.Sprintf("unhandled string type %d", f.fieldType)
@@ -165,6 +178,13 @@ func BooleanField(value bool) Field {
 	return Field{
 		fieldType: TypeBoolean,
 		boolValue: value,
+	}
+}
+
+func DateTimeField(value time.Time) Field {
+	return Field{
+		fieldType:     TypeDateTime,
+		datetimeValue: value,
 	}
 }
 
