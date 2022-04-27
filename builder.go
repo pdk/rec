@@ -1,6 +1,8 @@
 package rec
 
-import "strings"
+import (
+	"strings"
+)
 
 type RecordBuilder struct {
 	fieldMap fieldNamePositionMap
@@ -25,6 +27,19 @@ func (rb RecordBuilder) RecordFromStrings(values ...string) Record {
 	for _, each := range values {
 		each = strings.TrimSpace(each)
 		vals = append(vals, NewField(each))
+	}
+
+	return Record{
+		values:   vals,
+		fieldMap: rb.fieldMap,
+	}
+}
+
+func (rb RecordBuilder) RecordFromSQL(values ...any) Record {
+	vals := []Field{}
+
+	for _, each := range values {
+		vals = append(vals, fieldFromScanned(each))
 	}
 
 	return Record{

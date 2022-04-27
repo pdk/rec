@@ -1,6 +1,7 @@
 package pipe
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 
@@ -51,6 +52,10 @@ func ReadCSV(r io.Reader) Pipeline {
 	return New(rec.CSVReader(r))
 }
 
+func ReadSQL(db *sql.DB, query string, args ...any) Pipeline {
+	return New(rec.SQLReader(db, query, args...))
+}
+
 func (p Pipeline) Filter(f func(r rec.Record) bool) Pipeline {
 
 	filter := func(in chan rec.Record) chan rec.Record {
@@ -76,4 +81,25 @@ func Print(ch chan rec.Record) {
 	for rec := range ch {
 		fmt.Println(rec)
 	}
+}
+
+func (p Pipeline) Limit(limit int) Pipeline {
+
+	return p.Then(func(in chan rec.Record) chan rec.Record {
+
+		out := make(chan rec.Record)
+		go func() {
+			defer close(out)
+
+			recCount := 0
+			for r := range in {
+				recCount++
+				if recCount <= limit {
+					out <- r
+				}
+			}
+		}()
+
+		return out
+	})
 }
